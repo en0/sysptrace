@@ -6,6 +6,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include "calls.h"
+
 /** Print the system call and the register state to the **
  ** screen. This is for ARM only. Will not function in  **
  ** any other arch that i know of.                      **
@@ -16,12 +18,14 @@
 int arm_printregs(struct user_regs r) {
     /** This function is not portable **/
     int i;
-    
-    if(r.uregs[7] == 0) return 0;
+    int c = r.uregs[7];
 
-    fprintf(stderr, "--------------------\n");
-    fprintf(stderr, "SYSCALL: %i\n", r.uregs[7]);
-    fprintf(stderr, "--------------------\n");
+    if(c == 0) return 0;
+
+    fprintf(stderr, "--------------------------------\n");
+    if(c < MAX_CALLS) fprintf(stderr, "SYSCALL: %s (%i)\n", CALL(c), c);
+    else fprintf(stderr, "SYSCALL: UKNW (%i)\n", c);
+    fprintf(stderr, "--------------------------------\n");
     fprintf(stderr, "Registers:\n");
     for(i = 0; i < 13; i++) {
         fprintf(stderr, "\tr%i%s = 0x%.8x (%i)\n", 
@@ -34,7 +38,7 @@ int arm_printregs(struct user_regs r) {
     fprintf(stderr, "\tpc   = 0x%.8x (%i)\n", r.uregs[15], r.uregs[15]);
     fprintf(stderr, "\tcpsr = 0x%.8x (%i)\n", r.uregs[16], r.uregs[16]);
 
-    return r.uregs[7];
+    return c;
 }
 
 /** Print the return code of the syscall. Ignore if         **
