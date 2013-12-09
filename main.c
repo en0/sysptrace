@@ -1,10 +1,13 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
 #include <sys/user.h>
 #include <sys/ptrace.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <string.h>
+#include <ctype.h>
 
 #include "calls.h"
 
@@ -93,12 +96,51 @@ void envoke(char** argv) {
     _exit(1);
 }
 
+void search_by_name(char* str) {
+    int i;
+    for(i = 0; i < MAX_CALLS; i++) {
+        if(strcmp(CALL(i), str) == 0) {
+            printf("%s(%i)\n", CALL(i), i);
+            return;
+        }
+    }
+    
+    printf("No system call \"%s\" was found.\n", str);
+}
+
+void search_by_id(char* str) {
+    int i;
+    for(i = 0; str[i] != '\0'; i++)
+        if(!isdigit(str[i])) {
+            fprintf(stderr, "Bad Input!\n");
+            exit(1);
+        }
+
+    int id = atoi(str);
+    if(id >= MAX_CALLS) {
+        fprintf(stderr, "Bad Input!\n");
+        exit(1);
+    }
+
+    printf("%s(%i)\n", CALL(id), id);
+}
+
 int main(int argc, char** argv) {
     argv++; argc--;
     if(argc == 0) {
-        printf("Usage: sysptrace <program> [<args> ...]\n");
+        printf("Usage: sysptrace [-search | <program> [<args> ...] ]\n");
         return 1;
     }
+
+   // Search for a sys call by id or string  
+   if(argv[0][0] == '-') {
+        char* search_for = (argv[0]) + 1;
+        if(isdigit(search_for[0]))
+            search_by_id(search_for);
+        else
+            search_by_name(search_for);
+        return 0;
+   }
 
     pid_t pid = fork();
 
