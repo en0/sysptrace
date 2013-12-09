@@ -1,0 +1,50 @@
+System Calls for ARM/Linux system
+
+
+NOTE: 
+ All function selectors are stored in the [r7] register and syscalls are invoked with the SVC opcode
+ All returns are sent through r0 if applicable. If returns are marked N/A the value in r0 should be ignored.
+
+
+sys_exit : Exit the current process                                                         1
+---------------------------------------------------------------------------------------------------
+
+This will stop execution of the current program and pass control back to the OS.
+See the manual for exit(2) for more information.
+
+r0  = STATUS    <= The status code to exit with. (EXIT_SUCCESS, EXIT_FAILURE)               int
+RETURNS N/A
+
+
+sys_open : Open/Create a file.                                                              5
+---------------------------------------------------------------------------------------------------
+
+This will open/create a new file in the normal or special file in the file system.
+See the manual for open(2) for more information about the arguments.
+
+r0  = PATH      <= Pointer to a string containing the path name of the file.                char*
+r1  = FLAGS     <= Access modes and create options for the buffer.                          int
+r2  = MODE      <= The permissions to use if a new file is created.                         mode_t
+RETURNS The new file descriptor                                                             int
+
+
+sys_close : Close a open file descriptor.                                                   6
+---------------------------------------------------------------------------------------------------
+
+This will close a open file by descriptor ID.
+See the manual for close(2) for more information.
+
+r0  = fid       <= The file descriptor to be closed.                                        int
+RETURNS zero if successfull                                                                 int
+
+
+sys_exit_group : Exit process group.                                                        248
+---------------------------------------------------------------------------------------------------
+
+This will stop all process associated with this program group. That is all processes that are
+registered for the on_exit and atexit event.
+See the manual for exit(3) for more information
+
+r0  = STATUS    <= The status code to exit with. (EXIT_SUCCESS, EXIT_FAILURE)               int
+RETURNS N/A.
+
